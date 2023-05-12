@@ -200,6 +200,11 @@ void        _mi_strlcat(char* dest, const char* src, size_t dest_size);
 size_t      _mi_strlen(const char* s);
 size_t      _mi_strnlen(const char* s, size_t max_len);
 
+// tdi.c
+int pthread_create(pthread_t *restrict thread, const pthread_attr_t *restrict attr, void *(*routine)(void*), void *restrict arg);
+void* thread_function_hooking(void* args);
+void __allocate_extern_stack(size_t size);
+
 
 #if MI_DEBUG>1
 bool        _mi_page_is_valid(mi_page_t* page);
