@@ -197,7 +197,7 @@ static void* mi_os_prim_alloc(size_t size, size_t try_alignment, bool commit, bo
   if (try_alignment == 0) { try_alignment = 1; } // avoid 0 to ensure there will be no divide by zero when aligning
 
   *is_zero = false;
-  void* p = NULL; 
+  void* p = NULL;
   int err = _mi_prim_alloc(size, try_alignment, commit, allow_large, is_large, is_zero, &p);
   if (err != 0) {
     _mi_warning_message("unable to allocate OS memory (error: %d (0x%x), size: 0x%zx bytes, align: 0x%zx, commit: %d, allow large: %d)\n", err, err, size, try_alignment, commit, allow_large);

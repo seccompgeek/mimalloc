@@ -413,6 +413,7 @@ typedef struct mi_memid_s {
 // the OS. Inside segments we allocated fixed size _pages_ that
 // contain blocks.
 typedef struct mi_segment_s {
+  void*             safe_house;       //TDI safe_house
   // constant fields
   mi_memid_t        memid;              // memory id for arena allocation
   bool              allow_decommit;

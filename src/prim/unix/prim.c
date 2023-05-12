@@ -198,7 +198,7 @@ static void* unix_mmap_prim(void* addr, size_t size, size_t try_alignment, int p
         _mi_warning_message("unable to directly request hinted aligned OS memory (error: %d (0x%x), size: 0x%zx bytes, alignment: 0x%zx, hint address: %p)\n", err, err, size, try_alignment, hint);
       }
       if (p!=MAP_FAILED) return p;
-      // fall back to regular mmap      
+      // fall back to regular mmap
     }
   }
   #endif
@@ -320,6 +320,15 @@ static void* unix_mmap(void* addr, size_t size, size_t try_alignment, int protec
     }
   }
   return p;
+}
+
+void* _mi_alloc_safe_house(void) {
+  bool is_large;
+  return unix_mmap(NULL, MI_SEGMENT_SIZE, MI_SEGMENT_ALIGN, MAP_PRIVATE|MAP_ANONYMOUS, false, true, &is_large);
+}
+
+void _mi_free_safe_house(void* ptr) {
+  _mi_prim_free(ptr, MI_SEGMENT_SIZE);
 }
 
 // Note: the `try_alignment` is just a hint and the returned pointer is not guaranteed to be aligned.

@@ -732,6 +732,13 @@ void* _mi_heap_realloc_zero(mi_heap_t* heap, void* p, size_t newsize, bool zero)
       const size_t copysize = (newsize > size ? size : newsize);
       mi_track_mem_defined(p,copysize);  // _mi_useable_size may be too large for byte precise memory tracking..
       _mi_memcpy(newp, p, copysize);
+      //RustMeta: copy the safe parts => this is still naive
+      mi_segment_t* segment = _mi_ptr_segment(p);
+      void* old_safe = (void*)(((uint64_t)segment->safe_house) | (((uint64_t)p) & MI_SEGMENT_MASK));
+      mi_segment_t* segment_new = _mi_ptr_segment(newp);
+      void* new_safe = (void*)(((uint64_t)segment_new->safe_house) | (((uint64_t)newp) & MI_SEGMENT_MASK));
+      memcpy(new_safe, old_safe, size);
+      //RustMeta: end of copy
       mi_free(p); // only free the original pointer if successful
     }
   }

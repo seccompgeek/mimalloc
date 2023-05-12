@@ -270,7 +270,7 @@ static mi_decl_noinline void* mi_arena_try_alloc_at(mi_arena_t* arena, size_t ar
 }
 
 // allocate in a speficic arena
-static void* mi_arena_try_alloc_at_id(mi_arena_id_t arena_id, bool match_numa_node, int numa_node, size_t size, size_t alignment, 
+static void* mi_arena_try_alloc_at_id(mi_arena_id_t arena_id, bool match_numa_node, int numa_node, size_t size, size_t alignment,
                                        bool commit, bool allow_large, mi_arena_id_t req_arena_id, mi_memid_t* memid, mi_os_tld_t* tld ) 
 {
   MI_UNUSED_RELEASE(alignment);
@@ -299,7 +299,7 @@ static void* mi_arena_try_alloc_at_id(mi_arena_id_t arena_id, bool match_numa_no
 
 
 // allocate from an arena with fallback to the OS
-static mi_decl_noinline void* mi_arena_try_alloc(int numa_node, size_t size, size_t alignment, 
+static mi_decl_noinline void* mi_arena_try_alloc(int numa_node, size_t size, size_t alignment,
                                                   bool commit, bool allow_large,
                                                   mi_arena_id_t req_arena_id, mi_memid_t* memid, mi_os_tld_t* tld )
 {

@@ -181,6 +181,7 @@ mi_decl_nodiscard mi_decl_export void* mi_realloc_aligned_at(void* p, size_t new
 
 
 mi_decl_nodiscard mi_decl_export size_t* mi_get_tdi_index_slot(void);
+mi_decl_nodiscard mi_decl_export void* mi_get_segment(void*);
 
 // -------------------------------------------------------------------------------------
 // Heaps: first-class, but can only allocate from the same thread that created it.
