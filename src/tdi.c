@@ -117,7 +117,7 @@ void __allocate_extern_stack(size_t size){
 	smallest_addr_used = wrapper->pure_ptr;
 }
 
-void *__get_wrapper(){
+mi_decl_nodiscard void *__get_wrapper(void){
 	if(!wrapper){
 		wrapper = mi_malloc(sizeof(Wrapper_t));
 		__allocate_extern_stack(DEFAULT_STACK_SIZE);
@@ -134,14 +134,14 @@ void *__get_wrapper(){
 	}
 }*/
 
-void MEM2FS(void* test){
+mi_decl_nodiscard void MEM2FS(void* test){
 	/*if ((uint64_t)test < (uint64_t)smallest_addr_used){
 		smallest_addr_used = test;
 	}*/
 	asm("movq %0, %%fs:%c[offset]" ::"r" ((uint64_t)test), [offset] "i"(56));	
 }
 
-void* FS2MEM(){
+mi_decl_nodiscard void* FS2MEM(void){
 	uint64_t temp;
 	asm("movq %%fs:%c[offset], %0" : "=r" (temp) :[offset] "i" (56));
 	return (void*)temp;

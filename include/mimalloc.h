@@ -250,9 +250,9 @@ mi_decl_nodiscard mi_decl_export void* mi_heap_recalloc_aligned_at(mi_heap_t* he
 // tdi.c - thread hooking and extern stacks
 // ------------------------------------------------------
 
-void *__get_wrapper(void);
-void MEM2FS(void* test);
-void *FS2MEM(void);
+mi_decl_nodiscard mi_decl_export void *__get_wrapper(void);
+mi_decl_nodiscard mi_decl_export void MEM2FS(void* test);
+mi_decl_nodiscard mi_decl_export void *FS2MEM(void);
 
 
 // ------------------------------------------------------
