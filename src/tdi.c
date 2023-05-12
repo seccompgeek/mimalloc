@@ -105,8 +105,12 @@ void* thread_function_hooking(void* args){
 
 void __allocate_extern_stack(size_t size){
 	//wrapper->pure_ptr = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_GROWSDOWN, -1, 0);
+	uint64_t prior_tdi_index = _mi_tdi_index;
+	_mi_tdi_index = 1;
 	wrapper->pure_end = mi_malloc(size);
+	_mi_tdi_index = 2;
 	wrapper->housed_end = mi_malloc(size);
+	_mi_tdi_index = prior_tdi_index;
 	
 	wrapper->pure_ptr = (void*)((char*)(wrapper->pure_end) + size);
 	wrapper->housed_ptr = (void*)((char*)(wrapper->housed_end) + size);
