@@ -205,7 +205,6 @@ size_t      _mi_strlen(const char* s);
 size_t      _mi_strnlen(const char* s, size_t max_len);
 
 // tdi.c
-int pthread_create(pthread_t *restrict thread, const pthread_attr_t *restrict attr, void *(*routine)(void*), void *restrict arg);
 void* thread_function_hooking(void* args);
 void __allocate_extern_stack(size_t size);
 
