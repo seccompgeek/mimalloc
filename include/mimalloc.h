@@ -251,8 +251,8 @@ mi_decl_nodiscard mi_decl_export void* mi_heap_recalloc_aligned_at(mi_heap_t* he
 // ------------------------------------------------------
 
 mi_decl_nodiscard mi_decl_export void *__get_wrapper(void);
-mi_decl_nodiscard mi_decl_export void MEM2FS(void* test);
-mi_decl_nodiscard mi_decl_export void *FS2MEM(void);
+mi_decl_export void MEM2FS(void* test);
+mi_decl_export void *FS2MEM(void);
 
 
 // ------------------------------------------------------
