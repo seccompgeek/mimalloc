@@ -57,7 +57,7 @@ __thread Wrapper_t* wrapper = NULL;
 //__thread void* extern_stack_ptr = NULL;
 //__thread void* smallest_addr_used = NULL;
 
-void init_thread_hook(){
+void init_thread_hook(void){
   real_pthread_create = dlsym(RTLD_NEXT, "pthread_create");
   if(!real_pthread_create){
     PTHREAD_HOOKING_ERROR
@@ -137,14 +137,14 @@ mi_decl_nodiscard void *__get_wrapper(void){
 	}
 }*/
 
-mi_decl_nodiscard void MEM2FS(void* test){
+void MEM2FS(void* test){
 	/*if ((uint64_t)test < (uint64_t)smallest_addr_used){
 		smallest_addr_used = test;
 	}*/
 	asm("movq %0, %%fs:%c[offset]" ::"r" ((uint64_t)test), [offset] "i"(56));	
 }
 
-mi_decl_nodiscard void* FS2MEM(void){
+void* FS2MEM(void){
 	uint64_t temp;
 	asm("movq %%fs:%c[offset], %0" : "=r" (temp) :[offset] "i" (56));
 	return (void*)temp;
