@@ -50,12 +50,19 @@ typedef struct Argument
 }Argument_t;
 
 typedef int (*pthread_create_t)(pthread_t* restrict, const pthread_attr_t* restrict, void*(*)(void*), void* restrict);
+static pthread_once_t HOOKING_INIT = PTHREAD_ONCE_INIT;
 pthread_create_t real_pthread_create = 0;
 
 __thread Wrapper_t* wrapper = NULL;
 //__thread void* extern_stack_ptr = NULL;
-__thread void* smallest_addr_used = NULL;
+//__thread void* smallest_addr_used = NULL;
 
+void init_thread_hook(){
+  real_pthread_create = dlsym(RTLD_NEXT, "pthread_create");
+  if(!real_pthread_create){
+    PTHREAD_HOOKING_ERROR
+  }
+}
 
 int pthread_create(pthread_t *restrict thread, 
 				   const pthread_attr_t *restrict attr, 
@@ -65,10 +72,7 @@ int pthread_create(pthread_t *restrict thread,
 	Argument_t *temp = mi_malloc(sizeof(Argument_t));
 	temp->function = routine;
 	temp->args = arg;
-	real_pthread_create = dlsym(RTLD_NEXT, "pthread_create");
-  	if(!real_pthread_create){
-   		PTHREAD_HOOKING_ERROR
-  	}
+	pthread_once(&HOOKING_INIT,init_thread_hook);
 	return real_pthread_create(thread, attr, thread_function_hooking, temp);
 }
 
@@ -114,7 +118,6 @@ void __allocate_extern_stack(size_t size){
 	
 	wrapper->pure_ptr = (void*)((char*)(wrapper->pure_end) + size);
 	wrapper->housed_ptr = (void*)((char*)(wrapper->housed_end) + size);
-	smallest_addr_used = wrapper->pure_ptr;
 }
 
 mi_decl_nodiscard void *__get_wrapper(void){
