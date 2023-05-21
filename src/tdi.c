@@ -125,9 +125,9 @@ mi_decl_nodiscard void *__get_wrapper(void){
 		wrapper = mi_malloc(sizeof(Wrapper_t));
 		__allocate_extern_stack(DEFAULT_STACK_SIZE);
 	}
-	printf("wrapper    pointer   : %p\n\n", wrapper);
-	printf("pure stack pointer   : %p\n\n", wrapper->pure_ptr);
-	printf("housed stack pointer : %p\n\n", wrapper->housed_ptr);
+	//printf("wrapper    pointer   : %p\n\n", wrapper);
+	//printf("pure stack pointer   : %p\n\n", wrapper->pure_ptr);
+	//printf("housed stack pointer : %p\n\n", wrapper->housed_ptr);
 	return wrapper;
 }
 
