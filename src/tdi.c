@@ -82,8 +82,8 @@ void* thread_function_hooking(void* args){
 	//void* extern_sp = __allocate_extern_stack(DEFAULT_STACK_SIZE);
 	Argument_t *argument = (Argument_t*) args;
     
-	MEM2FS(extern_sp);	
-	
+	asm("movq %0, %%fs:%c[offset]" ::"r" ((uint64_t)extern_sp), [offset] "i"(56));	
+
 	void *retval = argument->function(argument->args);
 
 	/*uint64_t used_stack_size = (uint64_t)((char*)(extern_sp->pure_ptr) - (char*)smallest_addr_used);
@@ -137,16 +137,13 @@ mi_decl_nodiscard void *__get_wrapper(void){
 	}
 }*/
 
-void MEM2FS(void* test){
-	/*if ((uint64_t)test < (uint64_t)smallest_addr_used){
-		smallest_addr_used = test;
-	}*/
+/*void MEM2FS(void* test){
 	asm("movq %0, %%fs:%c[offset]" ::"r" ((uint64_t)test), [offset] "i"(56));	
-}
+}*/
 
-void* FS2MEM(void){
+/*void* FS2MEM(void){
 	uint64_t temp;
 	asm("movq %%fs:%c[offset], %0" : "=r" (temp) :[offset] "i" (56));
 	return (void*)temp;
-}
+}*/
 
