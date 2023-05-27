@@ -26,13 +26,14 @@ mi_decl_nodiscard void* mi_get_segment(void* ptr){
 #include <sys/mman.h>
 #include <pthread.h>
 #include <dlfcn.h>
+#include <stdnoreturn.h>
 
 
 #define PTHREAD_HOOKING_ERROR \
   fprintf(stderr, "Unable to create pthread library hooks\n"); \
   abort(); 
 
-#define DEFAULT_STACK_SIZE ((size_t)0x8000) // 4096*8 byte
+#define DEFAULT_STACK_SIZE ((size_t)0x100000) // maybe 128 page
 
 
 typedef struct Wrapper
@@ -49,9 +50,13 @@ typedef struct Argument
 	void* args;
 }Argument_t;
 
+__attribute__((constructor)) static void initialize_wrapper(void);
+
 typedef int (*pthread_create_t)(pthread_t* restrict, const pthread_attr_t* restrict, void*(*)(void*), void* restrict);
+typedef void (*pthread_exit_t)(void*);
 static pthread_once_t HOOKING_INIT = PTHREAD_ONCE_INIT;
 pthread_create_t real_pthread_create = 0;
+pthread_exit_t real_pthread_exit = 0;
 
 __thread Wrapper_t* wrapper = NULL;
 //__thread void* extern_stack_ptr = NULL;
@@ -59,7 +64,8 @@ __thread Wrapper_t* wrapper = NULL;
 
 void init_thread_hook(void){
   real_pthread_create = dlsym(RTLD_NEXT, "pthread_create");
-  if(!real_pthread_create){
+  real_pthread_exit = dlsym(RTLD_NEXT, "pthread_exit");
+  if(!real_pthread_create || !real_pthread_exit){
     PTHREAD_HOOKING_ERROR
   }
 }
@@ -80,11 +86,14 @@ void* thread_function_hooking(void* args){
 	void* t = __get_wrapper();
 	Wrapper_t *extern_sp = (Wrapper_t*) t;
 	//void* extern_sp = __allocate_extern_stack(DEFAULT_STACK_SIZE);
-	Argument_t *argument = (Argument_t*) args;
+	Argument_t argument;
+	argument.args = ((Argument_t*)args)->args;
+	argument.function = ((Argument_t*)args)->function ;
+	mi_free(args);
     
 	asm("movq %0, %%fs:%c[offset]" ::"r" ((uint64_t)extern_sp), [offset] "i"(56));	
 
-	void *retval = argument->function(argument->args);
+	void *retval = argument.function(argument.args);
 
 	/*uint64_t used_stack_size = (uint64_t)((char*)(extern_sp->pure_ptr) - (char*)smallest_addr_used);
 	int num_page = used_stack_size/4096;
@@ -99,12 +108,20 @@ void* thread_function_hooking(void* args){
 		printf("Unable to release the extern stack\n");
 	}*/
 
-	mi_free(argument);
-	mi_free(extern_sp->pure_end);
-	mi_free(extern_sp->housed_end);
-	mi_free(extern_sp);
+	//mi_free(argument);
+	//mi_free(extern_sp->pure_end);
+	//mi_free(extern_sp->housed_end);
+	//mi_free(extern_sp);
 
 	return retval;
+}
+
+_Noreturn void pthread_exit(void *__retval){
+	
+	mi_free(wrapper->pure_end);
+	mi_free(wrapper->housed_end);
+	mi_free(wrapper);	
+	real_pthread_exit(__retval);
 }
 
 void __allocate_extern_stack(size_t size){
@@ -121,14 +138,30 @@ void __allocate_extern_stack(size_t size){
 }
 
 mi_decl_nodiscard void *__get_wrapper(void){
+	//printf("test1\n");
 	if(!wrapper){
+		//printf("test2\n");
 		wrapper = mi_malloc(sizeof(Wrapper_t));
 		__allocate_extern_stack(DEFAULT_STACK_SIZE*10);
+		//asm("movq %0, %%fs:%c[offset]" ::"r" ((uint64_t)wrapper), [offset] "i"(56));	
 	}
 	//printf("wrapper    pointer   : %p\n\n", wrapper);
 	//printf("pure stack pointer   : %p\n\n", wrapper->pure_ptr);
 	//printf("housed stack pointer : %p\n\n", wrapper->housed_ptr);
 	return wrapper;
+}
+
+void check_fs(void){
+	uint64_t temp;
+	asm("movq %%fs:%c[offset], %0" : "=r" (temp) :[offset] "i" (56));
+	if(temp != (uint64_t)wrapper){
+		printf("wrong\n");
+	}
+}
+
+__attribute__((constructor)) static void initialize_wrapper(){
+	void* temp = __get_wrapper();
+	asm("movq %0, %%fs:%c[offset]" ::"r" ((uint64_t)temp), [offset] "i"(56));	
 }
 
 /*void smallest_address_used(){
