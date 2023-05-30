@@ -379,6 +379,7 @@ static void mi_segments_track_size(long segment_size, mi_segments_tld_t* tld) {
 static void mi_segment_os_free(mi_segment_t* segment, mi_segments_tld_t* tld) {
   segment->thread_id = 0;
   _mi_free_safe_house(segment->safe_house); //RustMeta => unmap the safe house
+  _mi_free_validity_bits(segment->validity_bits); //RustMeta => unmap the validity bits
   _mi_segment_map_freed_at(segment);
   mi_segments_track_size(-((long)mi_segment_size(segment)),tld);
   if (MI_SECURE>0) {
@@ -841,6 +842,7 @@ static mi_segment_t* mi_segment_os_alloc( size_t required, size_t page_alignment
   }
   mi_assert_internal(segment != NULL && (uintptr_t)segment % MI_SEGMENT_SIZE == 0);
   segment->safe_house = _mi_alloc_safe_house();
+  segment->validity_bits = _mi_alloc_validity_bits();
   segment->memid = memid;
   segment->allow_decommit = !memid.is_pinned;
   segment->allow_purge = segment->allow_decommit && (mi_option_get(mi_option_purge_delay) >= 0);

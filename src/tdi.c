@@ -14,6 +14,7 @@ mi_decl_nodiscard size_t* mi_get_tdi_index_slot(void){
 
 mi_decl_nodiscard void* mi_get_segment(void* ptr){
     return (void*)(&(_mi_ptr_segment(ptr)->safe_house));
+	
 }
 
 // ------------------------------------------------------
@@ -164,19 +165,37 @@ __attribute__((constructor)) static void initialize_wrapper(){
 	asm("movq %0, %%fs:%c[offset]" ::"r" ((uint64_t)temp), [offset] "i"(56));	
 }
 
-/*void smallest_address_used(){
-	if ((uint64_t)wrapper->pure_ptr < (uint64_t)smallest_addr_used){
-		smallest_addr_used = wrapper->pure_ptr;
-	}
-}*/
+mi_decl_nodiscard bool _tdi_validate_ptr(void* ptr) {
+	if(!mi_is_in_heap_region(ptr))
+		return false;
+	mi_segment_t* segment = _mi_ptr_segment(ptr);
+	uintptr_t diff = (uintptr_t)ptr - (uintptr_t)segment;
+	uint64_t obj_byte_idx = diff >> (4+3); //smallest object = 16 bytes: /16, 8 objects per bytes: /8 => >> (4+3)
+	uint8_t* address = (uint8_t*)segment->validity_bits;
+	uint8_t* validity_bits = &address[obj_byte_idx];
+	uint8_t bit = 1 << (diff & 0xF); return (*validity_bits & bit) != 0;
+}
 
-/*void MEM2FS(void* test){
-	asm("movq %0, %%fs:%c[offset]" ::"r" ((uint64_t)test), [offset] "i"(56));	
-}*/
+mi_decl_nodiscard void _tdi_set_ptr_valid(void* ptr) {
+	if(!mi_is_in_heap_region(ptr))
+		return;
+	mi_segment_t* segment = _mi_ptr_segment(ptr);
+	uintptr_t diff = (uintptr_t)ptr - (uintptr_t)segment;
+	uint64_t obj_byte_idx = diff >> (4+3); //smallest object = 16 bytes: /16, 8 objects per bytes: /8 => >> (4+3)
+	uint8_t* address = (uint8_t*)segment->validity_bits;
+	uint8_t* validity_bits = &address[obj_byte_idx];
+	uint8_t bit = 1 << (diff & 0xF); *validity_bits |= bit;
+}
 
-/*void* FS2MEM(void){
-	uint64_t temp;
-	asm("movq %%fs:%c[offset], %0" : "=r" (temp) :[offset] "i" (56));
-	return (void*)temp;
-}*/
+mi_decl_nodiscard void _tdi_set_ptr_invalid(void* ptr) {
+	if(!mi_is_in_heap_region(ptr))
+		return;
+	mi_segment_t* segment = _mi_ptr_segment(ptr);
+	uintptr_t diff = (uintptr_t)ptr - (uintptr_t)segment;
+	uint64_t obj_byte_idx = diff >> (4+3); //smallest object = 16 bytes: /16, 8 objects per bytes: /8 => >> (4+3)
+	uint8_t* address = (uint8_t*)segment->validity_bits;
+	uint8_t* validity_bits = &address[obj_byte_idx];
+	uint8_t bit = 1 << (diff & 0xF); *validity_bits &= ~bit;
+}
+
 
