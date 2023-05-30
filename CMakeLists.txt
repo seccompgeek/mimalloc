@@ -502,7 +502,7 @@ if (MI_BUILD_TESTS)
     target_compile_definitions(mimalloc-test-${TEST_NAME} PRIVATE ${mi_defines})
     target_compile_options(mimalloc-test-${TEST_NAME} PRIVATE ${mi_cflags})
     target_include_directories(mimalloc-test-${TEST_NAME} PRIVATE include)
-    target_link_libraries(mimalloc-test-${TEST_NAME} PRIVATE mimalloc ${mi_libraries})
+    target_link_libraries(mimalloc-test-${TEST_NAME} PRIVATE mimalloc -ldl ${mi_libraries})
 
     add_test(NAME test-${TEST_NAME} COMMAND mimalloc-test-${TEST_NAME})
   endforeach()

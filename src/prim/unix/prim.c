@@ -327,8 +327,17 @@ void* _mi_alloc_safe_house(void) {
   return unix_mmap(NULL, MI_SEGMENT_SIZE, MI_SEGMENT_ALIGN, MAP_PRIVATE|MAP_ANONYMOUS, false, true, &is_large);
 }
 
+void* _mi_alloc_validity_bits(void){
+  bool is_large;
+  return unix_mmap(NULL, MI_VALIDITY_BITS_SIZE, MI_VALIDITY_BITS_SIZE, MAP_PRIVATE|MAP_ANONYMOUS, false, true, &is_large);
+}
+
 void _mi_free_safe_house(void* ptr) {
   _mi_prim_free(ptr, MI_SEGMENT_SIZE);
+}
+
+void _mi_free_validity_bits(void* ptr){
+  _mi_prim_free(ptr, MI_VALIDITY_BITS_SIZE);
 }
 
 // Note: the `try_alignment` is just a hint and the returned pointer is not guaranteed to be aligned.

@@ -118,6 +118,8 @@ void*      _mi_os_alloc_huge_os_pages(size_t pages, int numa_node, mi_msecs_t ma
 //TDI
 void* _mi_alloc_safe_house(void);
 void _mi_free_safe_house(void*);
+void* _mi_alloc_validity_bits(void);
+void _mi_free_validity_bits(void*);
 
 // arena.c
 mi_arena_id_t _mi_arena_id_none(void);

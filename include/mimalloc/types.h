@@ -185,6 +185,9 @@ typedef int32_t  mi_ssize_t;
 #define MI_LARGE_OBJ_SIZE_MAX             (MI_SEGMENT_SIZE/2)      // 32MiB on 64-bit
 #define MI_LARGE_OBJ_WSIZE_MAX            (MI_LARGE_OBJ_SIZE_MAX/MI_INTPTR_SIZE)
 
+// MetaSafe Validity Bits
+#define MI_VALIDITY_BITS_SIZE                  (MI_ZU(1) << 19) //64 pages (4KiB*64)
+
 // Maximum number of size classes. (spaced exponentially in 12.5% increments)
 #define MI_BIN_HUGE  (73U)
 
@@ -414,6 +417,7 @@ typedef struct mi_memid_s {
 // contain blocks.
 typedef struct mi_segment_s {
   void*             safe_house;       //TDI safe_house
+  void*             validity_bits;     //MetaSafe Valid bits
   // constant fields
   mi_memid_t        memid;              // memory id for arena allocation
   bool              allow_decommit;
