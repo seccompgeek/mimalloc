@@ -56,7 +56,7 @@ set(mi_sources
     src/prim/prim.c)
 
 set(mi_cflags "")
-set(mi_libraries "")
+set(mi_libraries "-ldl")
 
 # -----------------------------------------------------------------------------
 # Convenience: set default build type depending on the build directory
