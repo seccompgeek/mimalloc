@@ -118,6 +118,7 @@ void _mi_prim_thread_associate_default_heap(mi_heap_t* heap);
 //TDI -related
 #define MAX_TDI_HEAPS 1024
 extern mi_decl_thread mi_decl_export size_t _mi_tdi_index;
+extern mi_decl_export int _mi_mpk_pkey;
 extern mi_decl_thread mi_heap_t* _mi_tdi_heaps[MAX_TDI_HEAPS];
 
 static inline mi_heap_t* mi_prim_get_tdi_heap(void){

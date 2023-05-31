@@ -27,6 +27,7 @@ option(MI_DEBUG_TSAN        "Build with thread sanitizer (needs clang)" OFF)
 option(MI_DEBUG_UBSAN       "Build with undefined-behavior sanitizer (needs clang++)" OFF)
 option(MI_SKIP_COLLECT_ON_EXIT "Skip collecting memory on program exit" OFF)
 option(MI_NO_PADDING        "Force no use of padding even in DEBUG mode etc." OFF)
+option(MI_MPK               "Apply MPK protection for intel CPUs. This is for RustMeta/MetaSafe projects" ON)
 
 # deprecated options
 option(MI_CHECK_FULL        "Use full internal invariant checking in DEBUG mode (deprecated, use MI_DEBUG_FULL instead)" OFF)
@@ -200,6 +201,11 @@ endif()
 if(MI_DEBUG_FULL)
   message(STATUS "Set debug level to full internal invariant checking (MI_DEBUG_FULL=ON)")
   list(APPEND mi_defines MI_DEBUG=3)   # full invariant checking
+endif()
+
+if(MI_MPK)
+  message(STATUS "Set MPK Protection on. this is for RustMeta/MetaSafe on Intel CPUs")
+  list(APPEND mi_defines MI_MPK=1)
 endif()
 
 if(MI_NO_PADDING)

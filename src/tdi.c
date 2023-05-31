@@ -140,6 +140,11 @@ void __allocate_extern_stack(size_t size){
 
 mi_decl_nodiscard void *__get_wrapper(void){
 	//printf("test1\n");
+#ifdef MI_MPK
+	if(_mi_mpk_pkey == 0){
+		_mi_mpk_alloc_key();
+	}
+#endif
 	if(!wrapper){
 		//printf("test2\n");
 		wrapper = mi_malloc(sizeof(Wrapper_t));
@@ -163,6 +168,11 @@ void check_fs(void){
 __attribute__((constructor)) static void initialize_wrapper(){
 	void* temp = __get_wrapper();
 	asm("movq %0, %%fs:%c[offset]" ::"r" ((uint64_t)temp), [offset] "i"(56));	
+#ifdef MI_MPK
+	if(_mi_mpk_pkey == 0){
+		_mi_mpk_alloc_key();
+	}
+#endif
 }
 
 mi_decl_nodiscard bool _tdi_validate_ptr(void* ptr) {
@@ -176,6 +186,9 @@ mi_decl_nodiscard bool _tdi_validate_ptr(void* ptr) {
 	uint8_t bit = 1 << (diff & 0xF); return (*validity_bits & bit) != 0;
 }
 
+
+
+/********************************Synchronization*****************************/
 mi_decl_nodiscard void _tdi_set_ptr_valid(void* ptr) {
 	if(!mi_is_in_heap_region(ptr))
 		return;
@@ -195,7 +208,106 @@ mi_decl_nodiscard void _tdi_set_ptr_invalid(void* ptr) {
 	uint64_t obj_byte_idx = diff >> (4+3); //smallest object = 16 bytes: /16, 8 objects per bytes: /8 => >> (4+3)
 	uint8_t* address = (uint8_t*)segment->validity_bits;
 	uint8_t* validity_bits = &address[obj_byte_idx];
-	uint8_t bit = 1 << (diff & 0xF); *validity_bits &= ~bit;
+	uint8_t bit = 1 << (diff & 0xF); 
+	if(*validity_bits & bit != 0){
+		*validity_bits &= ~bit;
+	}else{
+		//should throw an error! double free or invalid free?
+	}
 }
 
 
+/********************MPK****************************/
+#include <sys/syscall.h>
+#include <unistd.h>
+
+#define PKEY_ENABLE_ALL 0x0
+#define PKEY_DISABLE_ACCESS 0x1
+#define PKEY_DISABLE_WRITE 0x2
+#define SYS_pkey_mprotect 0x149
+#define SYS_pkey_alloc 0x14a
+#define SYS_pkey_free 0x14b
+#define __NR_pkey_sync 334
+
+#define make_pkru(pkey, rights) ((rights) << (2 * pkey))
+
+#define LOGGING 0
+#define __SOURCEFILE__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+#define rlog(format, ...) { \
+    if( LOGGING ) { \
+        FILE *fp = fopen("/home/soyeon/log/log2", "a"); \
+        fprintf(fp, "[smv] " format, ##__VA_ARGS__); \
+        fflush(NULL);   \
+        fclose(fp); \
+    }\
+}
+static inline void 
+_mi_mpk_wrpkru(unsigned int pkru) 
+{ 
+//unsigned int eax = pkru; 
+//unsigned int ecx = 0; 
+//unsigned int edx = 0;
+
+asm volatile(".byte 0x0f,0x01,0xef\n\t" 
+: : "a" (pkru), "c" (0), "d" (0)); 
+}
+
+static inline int
+_mi_mpk_rdpkru() {
+  register int eax, edx;
+  asm volatile(".byte 0x0f, 0x01, 0xee\n\t"
+      : "=a" (eax), "=d" (edx) : "c" (0));
+  return eax;
+}
+
+static inline int
+_mi_mpk_pkey_set(int pkru) 
+{ 
+asm volatile(".byte 0x0f,0x01,0xef\n\t" 
+: : "a" (pkru), "c" (0), "d" (0)); 
+return 0;
+}
+
+static int
+_mi_mpk_pkey_set_real(int pkru, int pkey) 
+{
+  register int eax, edx;
+  asm volatile(".byte 0x0f, 0x01, 0xee\n\t"
+      : "=a" (eax), "=d" (edx) : "c" (0));
+  asm volatile(".byte 0x0f, 0x01, 0xef\n\t"
+      : : "a" ((eax & ~(0x3 << (pkey * 2))) | pkru), "c" (0), "d" (edx));
+  return 0;
+}
+
+int 
+_mi_mpk_pkey_mprotect(void *ptr, size_t size, unsigned long orig_prot, 
+unsigned long pkey) 
+{ 
+	return syscall(SYS_pkey_mprotect, ptr, size, orig_prot, pkey); 
+}
+
+static inline int 
+_mi_mpk_pkey_alloc(int flag, int permit) 
+{ 
+	return syscall(SYS_pkey_alloc, flag, permit); 
+}
+
+static inline int 
+_mi_mpk_pkey_free(unsigned long pkey) 
+{ 
+	return syscall(SYS_pkey_free, pkey); 
+}
+
+int _mi_mpk_pkey = 0;
+void _mi_mpk_alloc_key() {
+	_mi_mpk_pkey = _mi_mpk_pkey_alloc(0,0);
+}
+
+
+mi_decl_nodiscard void _mi_mpk_enable_writes() {
+	_mi_mpk_pkey_set_real(make_pkru(_mi_mpk_pkey, 0), _mi_mpk_pkey); //dummy, need to measure performance OH
+}
+
+mi_decl_nodiscard void _mi_mpk_disable_writes() {
+	_mi_mpk_pkey_set_real(make_pkru(_mi_mpk_pkey, 0), _mi_mpk_pkey); //dummy, need to measure performance OH
+}

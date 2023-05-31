@@ -116,10 +116,14 @@ size_t     _mi_os_large_page_size(void);
 void*      _mi_os_alloc_huge_os_pages(size_t pages, int numa_node, mi_msecs_t max_secs, size_t* pages_reserved, size_t* psize, mi_memid_t* memid);
 
 //TDI
+extern mi_decl_thread mi_decl_export size_t _mi_tdi_index;
+extern mi_decl_export int _mi_mpk_pkey;
 void* _mi_alloc_safe_house(void);
 void _mi_free_safe_house(void*);
 void* _mi_alloc_validity_bits(void);
 void _mi_free_validity_bits(void*);
+int _mi_mpk_pkey_mprotect(void *ptr, size_t size, unsigned long orig_prot, 
+unsigned long pkey);
 
 // arena.c
 mi_arena_id_t _mi_arena_id_none(void);
