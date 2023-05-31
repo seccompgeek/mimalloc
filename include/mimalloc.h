@@ -185,6 +185,8 @@ mi_decl_nodiscard mi_decl_export void* mi_get_segment(void*);
 mi_decl_nodiscard mi_decl_export bool _tdi_validate_ptr(void*);
 mi_decl_nodiscard mi_decl_export void _tdi_set_ptr_valid(void*);
 mi_decl_nodiscard mi_decl_export void _tdi_set_ptr_invalid(void*);
+mi_decl_nodiscard mi_decl_export void _mi_mpk_enable_writes();
+mi_decl_nodiscard mi_decl_export void _mi_mpk_disable_writes();
 
 // -------------------------------------------------------------------------------------
 // Heaps: first-class, but can only allocate from the same thread that created it.

@@ -15,7 +15,6 @@ terms of the MIT license. A copy of the license can be found in the file
 
 static void mi_segment_try_purge(mi_segment_t* segment, bool force, mi_stats_t* stats);
 
-
 // -------------------------------------------------------------------
 // commit mask 
 // -------------------------------------------------------------------
@@ -739,6 +738,15 @@ static mi_page_t* mi_segment_span_allocate(mi_segment_t* segment, size_t slice_i
     last->slice_count = 0;
     last->xblock_size = 1;
   }
+
+  //RustMeta~MetaSafe MPK
+  #ifdef MI_MPK
+  if(_mi_tdi_index == 1){
+    uintptr_t page_base = (uintptr_t)page & ~(0xFFF);
+    void* address = (void*)page_base;
+    _mi_mpk_pkey_mprotect(address, bsize, 0, _mi_mpk_pkey);
+  }
+  #endif
   
   // and initialize the page
   page->is_committed = true;
