@@ -34,7 +34,7 @@ mi_decl_nodiscard void* mi_get_segment(void* ptr){
   fprintf(stderr, "Unable to create pthread library hooks\n"); \
   abort(); 
 
-#define DEFAULT_STACK_SIZE ((size_t)0x100000) // maybe 128 page
+#define DEFAULT_STACK_SIZE ((size_t)0x10000) // maybe 128 page
 
 
 typedef struct Wrapper
@@ -148,7 +148,7 @@ mi_decl_nodiscard void *__get_wrapper(void){
 	if(!wrapper){
 		//printf("test2\n");
 		wrapper = mi_malloc(sizeof(Wrapper_t));
-		__allocate_extern_stack(DEFAULT_STACK_SIZE*10);
+		__allocate_extern_stack(DEFAULT_STACK_SIZE);
 		//asm("movq %0, %%fs:%c[offset]" ::"r" ((uint64_t)wrapper), [offset] "i"(56));	
 	}
 	//printf("wrapper    pointer   : %p\n\n", wrapper);

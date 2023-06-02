@@ -744,7 +744,7 @@ static mi_page_t* mi_segment_span_allocate(mi_segment_t* segment, size_t slice_i
   if(_mi_tdi_index == 1){
     uintptr_t page_base = (uintptr_t)page & ~(0xFFF);
     void* address = (void*)page_base;
-    _mi_mpk_pkey_mprotect(address, bsize, 0, _mi_mpk_pkey);
+    _mi_mpk_pkey_mprotect(address, bsize, 3, _mi_mpk_pkey);
   }
   #endif
   
