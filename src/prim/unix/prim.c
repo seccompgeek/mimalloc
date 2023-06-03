@@ -327,6 +327,11 @@ void* _mi_alloc_safe_house(void) {
   return unix_mmap(NULL, MI_SEGMENT_SIZE, MI_SEGMENT_ALIGN, MAP_PRIVATE|MAP_ANONYMOUS, false, true, &is_large);
 }
 
+void* _mi_alloc_safe_stack(void) {
+  bool is_large;
+  return unix_mmap(NULL, MI_SMALL_PAGE_SIZE, 0x1000, MAP_PRIVATE|MAP_ANONYMOUS, false, true, &is_large);
+}
+
 void* _mi_alloc_validity_bits(void){
   bool is_large;
   return unix_mmap(NULL, MI_VALIDITY_BITS_SIZE, MI_VALIDITY_BITS_SIZE, MAP_PRIVATE|MAP_ANONYMOUS, false, true, &is_large);
@@ -334,6 +339,10 @@ void* _mi_alloc_validity_bits(void){
 
 void _mi_free_safe_house(void* ptr) {
   _mi_prim_free(ptr, MI_SEGMENT_SIZE);
+}
+
+void _mi_free_safe_stack(void* ptr) {
+  _mi_prim_free(ptr, MI_SMALL_PAGE_SIZE);
 }
 
 void _mi_free_validity_bits(void* ptr){
