@@ -83,6 +83,8 @@ int pthread_create(pthread_t *restrict thread,
 	return real_pthread_create(thread, attr, thread_function_hooking, temp);
 }
 
+void _mi_mpk_alloc_key(void);
+
 void* thread_function_hooking(void* args){
 	void* t = __get_wrapper();
 	Wrapper_t *extern_sp = (Wrapper_t*) t;
@@ -138,7 +140,7 @@ void __allocate_extern_stack(size_t size){
 	wrapper->housed_ptr = (void*)((char*)(wrapper->housed_end) + size);
 }
 
-mi_decl_nodiscard void *__get_wrapper(void){
+void *__get_wrapper(void){
 	//printf("test1\n");
 #ifdef MI_MPK
 	if(_mi_mpk_pkey == 0){
@@ -189,7 +191,7 @@ mi_decl_nodiscard bool _tdi_validate_ptr(void* ptr) {
 
 
 /********************************Synchronization*****************************/
-mi_decl_nodiscard void _tdi_set_ptr_valid(void* ptr) {
+void _tdi_set_ptr_valid(void* ptr) {
 	if(!mi_is_in_heap_region(ptr))
 		return;
 	mi_segment_t* segment = _mi_ptr_segment(ptr);
@@ -200,7 +202,7 @@ mi_decl_nodiscard void _tdi_set_ptr_valid(void* ptr) {
 	uint8_t bit = 1 << (diff & 0xF); *validity_bits |= bit;
 }
 
-mi_decl_nodiscard void _tdi_set_ptr_invalid(void* ptr) {
+void _tdi_set_ptr_invalid(void* ptr) {
 	if(!mi_is_in_heap_region(ptr))
 		return;
 	mi_segment_t* segment = _mi_ptr_segment(ptr);
@@ -209,7 +211,7 @@ mi_decl_nodiscard void _tdi_set_ptr_invalid(void* ptr) {
 	uint8_t* address = (uint8_t*)segment->validity_bits;
 	uint8_t* validity_bits = &address[obj_byte_idx];
 	uint8_t bit = 1 << (diff & 0xF); 
-	if(*validity_bits & bit != 0){
+	if((*validity_bits & bit) != 0){
 		*validity_bits &= ~bit;
 	}else{
 		//should throw an error! double free or invalid free?
@@ -220,14 +222,6 @@ mi_decl_nodiscard void _tdi_set_ptr_invalid(void* ptr) {
 /********************MPK****************************/
 #include <sys/syscall.h>
 #include <unistd.h>
-
-#define PKEY_ENABLE_ALL 0x0
-#define PKEY_DISABLE_ACCESS 0x1
-#define PKEY_DISABLE_WRITE 0x2
-#define SYS_pkey_mprotect 0x149
-#define SYS_pkey_alloc 0x14a
-#define SYS_pkey_free 0x14b
-#define __NR_pkey_sync 334
 
 #define make_pkru(pkey, rights) ((rights) << (2 * pkey))
 
@@ -253,7 +247,7 @@ asm volatile(".byte 0x0f,0x01,0xef\n\t"
 }
 
 static inline int
-_mi_mpk_rdpkru() {
+_mi_mpk_rdpkru(void) {
   register int eax, edx;
   asm volatile(".byte 0x0f, 0x01, 0xee\n\t"
       : "=a" (eax), "=d" (edx) : "c" (0));
@@ -299,15 +293,15 @@ _mi_mpk_pkey_free(unsigned long pkey)
 }
 
 int _mi_mpk_pkey = 0;
-void _mi_mpk_alloc_key() {
+void _mi_mpk_alloc_key(void) {
 	_mi_mpk_pkey = _mi_mpk_pkey_alloc(0,0);
 }
 
 
-mi_decl_nodiscard void _mi_mpk_enable_writes() {
+mi_decl_export void _mi_mpk_enable_writes(void) {
 	_mi_mpk_pkey_set_real(make_pkru(_mi_mpk_pkey, 0), _mi_mpk_pkey); //dummy, need to measure performance OH
 }
 
-mi_decl_nodiscard void _mi_mpk_disable_writes() {
+mi_decl_export void _mi_mpk_disable_writes(void) {
 	_mi_mpk_pkey_set_real(make_pkru(_mi_mpk_pkey, 0), _mi_mpk_pkey); //dummy, need to measure performance OH
 }

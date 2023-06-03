@@ -189,7 +189,14 @@ mi_decl_nodiscard mi_decl_restrict void* mi_malloc_aligned_at(size_t size, size_
 }
 
 mi_decl_nodiscard mi_decl_restrict void* mi_malloc_aligned(size_t size, size_t alignment) mi_attr_noexcept {
-  return mi_heap_malloc_aligned(mi_prim_get_default_heap(), size, alignment);
+  if(_mi_tdi_index == 0){
+    return mi_heap_malloc_aligned(mi_prim_get_default_heap(), size, alignment);
+  }
+
+  if(_mi_tdi_heaps[_mi_tdi_index] == NULL) {
+    _mi_tdi_heaps[_mi_tdi_index] = mi_heap_new();
+  }
+  return mi_heap_malloc_aligned(_mi_tdi_heaps[_mi_tdi_index], size, alignment);
 }
 
 mi_decl_nodiscard mi_decl_restrict void* mi_zalloc_aligned_at(size_t size, size_t alignment, size_t offset) mi_attr_noexcept {

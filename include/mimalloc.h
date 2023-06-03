@@ -183,10 +183,10 @@ mi_decl_nodiscard mi_decl_export void* mi_realloc_aligned_at(void* p, size_t new
 mi_decl_nodiscard mi_decl_export size_t* mi_get_tdi_index_slot(void);
 mi_decl_nodiscard mi_decl_export void* mi_get_segment(void*);
 mi_decl_nodiscard mi_decl_export bool _tdi_validate_ptr(void*);
-mi_decl_nodiscard mi_decl_export void _tdi_set_ptr_valid(void*);
-mi_decl_nodiscard mi_decl_export void _tdi_set_ptr_invalid(void*);
-mi_decl_nodiscard mi_decl_export void _mi_mpk_enable_writes();
-mi_decl_nodiscard mi_decl_export void _mi_mpk_disable_writes();
+mi_decl_export void _tdi_set_ptr_valid(void*);
+mi_decl_export void _tdi_set_ptr_invalid(void*);
+mi_decl_export void _mi_mpk_enable_writes(void);
+mi_decl_export void _mi_mpk_disable_writes(void);
 
 // -------------------------------------------------------------------------------------
 // Heaps: first-class, but can only allocate from the same thread that created it.
