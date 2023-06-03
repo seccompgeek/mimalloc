@@ -13,6 +13,7 @@ terms of the MIT license. A copy of the license can be found in the file
 #undef _POSIX_C_SOURCE
 #endif
 
+#define _GNU_SOURCE
 #include "mimalloc.h"
 #include "mimalloc/internal.h"
 
