@@ -121,25 +121,23 @@ void* thread_function_hooking(void* args){
 
 _Noreturn void pthread_exit(void *__retval){
 	
-	//mi_free(wrapper->pure_end);
-	//mi_free(wrapper->housed_end);
-	_mi_free_safe_stack(wrapper->housed_end);
-	_mi_free_safe_stack(wrapper->pure_end);
+	mi_free(wrapper->pure_end);
+	mi_free(wrapper->housed_end);
 	mi_free(wrapper);	
 	real_pthread_exit(__retval);
 }
 
 void __allocate_extern_stack(size_t size){
 	//wrapper->pure_ptr = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_GROWSDOWN, -1, 0);
-	//uint64_t prior_tdi_index = _mi_tdi_index;
-	//_mi_tdi_index = 1;
-	wrapper->pure_end = _mi_alloc_safe_stack();
-	//_mi_tdi_index = 2;
-	wrapper->housed_end = _mi_alloc_safe_stack();
-	//_mi_tdi_index = prior_tdi_index;
+	uint64_t prior_tdi_index = _mi_tdi_index;
+	_mi_tdi_index = 1;
+	wrapper->pure_end = mi_malloc(size);
+	_mi_tdi_index = 2;
+	wrapper->housed_end = mi_malloc(size);
+	_mi_tdi_index = prior_tdi_index;
 	
-	wrapper->pure_ptr = (void*)((char*)(wrapper->pure_end) + MI_SMALL_PAGE_SIZE);
-	wrapper->housed_ptr = (void*)((char*)(wrapper->housed_end) + MI_SMALL_PAGE_SIZE);
+	wrapper->pure_ptr = (void*)((char*)(wrapper->pure_end) + size);
+	wrapper->housed_ptr = (void*)((char*)(wrapper->housed_end) + size);
 }
 
 void *__get_wrapper(void){

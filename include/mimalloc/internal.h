@@ -119,9 +119,7 @@ void*      _mi_os_alloc_huge_os_pages(size_t pages, int numa_node, mi_msecs_t ma
 extern mi_decl_thread mi_decl_export size_t _mi_tdi_index;
 extern mi_decl_export int _mi_mpk_pkey;
 void* _mi_alloc_safe_house(void);
-void* _mi_alloc_safe_stack(void);
 void _mi_free_safe_house(void*);
-void _mi_free_safe_stack(void*);
 void* _mi_alloc_validity_bits(void);
 void _mi_free_validity_bits(void*);
 int _mi_mpk_pkey_mprotect(void *ptr, size_t size, unsigned long orig_prot, 
